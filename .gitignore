@@ -1,0 +1,110 @@
+# ==============================================================================
+# JobGuard AI - Comprehensive .gitignore
+# ==============================================================================
+
+# Operating System & IDE Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node.js Dependencies & Build Output
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+build/
+**/build/
+coverage/
+**/coverage/
+.vite/
+**/.vite/
+.vite-temp/
+**/.vite-temp/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python Caches & Virtual Environments
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment Variables & Secrets (NEVER COMMIT)
+.env
+.env.*
+**/.env
+**/.env.*
+*.pem
+*.key
+*.crt
+*.pfx
+
+# Preserve Environment Template
+!.env.example
+!**/.env.example
+
+# Local SQLite or Database Dumps
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.sql.gz
+
+# Local User Uploads & Generated Reports (Keep Directory Anchors)
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/reports/*
+!storage/reports/.gitkeep
+
+# Raw Datasets & Duplicate Dataset Archives (Kept Locally, Excluded from GitHub)
+data/raw/
+reference/Datasets/
+**/fake_job_postings.csv
+**/PhiUSIIL_Phishing_URL_Dataset.csv
+reference/PhiUSIIL_Phishing_URL_Dataset.csv
+reference/improvment/fake_job_postings.csv
+reference/improvment/PhiUSIIL_Phishing_URL_Dataset.csv
+reference/JobGuard_Evaluation/fake_job_postings.csv
+reference/JobGuard_Evaluation/PhiUSIIL_Phishing_URL_Dataset.csv
+
+# Local Terminal & Scratch Notes
+reference/Project Running.txt
+reference/Terminal 1*.txt
+
+# Preserve Machine Learning Inference Artifacts & Evaluation Reports
+!ml/artifacts/*.joblib
+!ml/artifacts/*.json
+!data/evaluation/*.png
+!data/evaluation/*.csv
+!data/evaluation/*.docx
+!reference/JobGuard_Evaluation/JobGuard_Results/*

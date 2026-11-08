@@ -1,0 +1,5 @@
+Dataset,Pipeline,Split,Train %,Test %,Train n,Test n,Feature extraction,Classifier,Accuracy,Precision,Recall,F1-score,ROC-AUC,Fit seconds,Feature count,"Confusion matrix (TN, FP, FN, TP)"
+EMSCAD,TF-IDF + Logistic Regression,70:30,70,30,12516,5364,TF-IDF text features,Logistic Regression,0.9744593586875466,1.0,0.47307692307692306,0.6422976501305483,0.9835634193392815,0.12,12000.0,"[5104, 0, 137, 123]"
+PhiUSIIL,18 URL features + XGBoost,70:30,70,30,165056,70739,18 numerical URL features,XGBoost (XGBClassifier),0.9975402536083349,0.9998339973439575,0.9944194954431383,0.9971193960664857,0.9987485385538469,1.627,18.0,"[40450, 5, 169, 30115]"
+PhiUSIIL,18 URL features + Logistic Regression,70:30,70,30,165056,70739,18 numerical URL features,Logistic Regression,0.9976533453964574,0.9999336033463914,0.9945845991282526,0.9972519286163626,0.99858898852328,0.524,18.0,"[40453, 2, 164, 30120]"
+Combined comparison (mean of 3 pipelines),Arithmetic mean of the three pipeline scores,70:30,70,30,342628,146842,Different feature spaces; not merged,Not a trained classifier,0.9898843192307796,0.9999225335634496,0.8206936725494379,0.8788896582711322,0.9936336488054694,,,Not applicable

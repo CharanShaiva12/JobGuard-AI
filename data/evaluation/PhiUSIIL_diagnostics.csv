@@ -1,0 +1,8 @@
+Check,Result
+Rows with binary labels,235795
+Source label 0 count,100945
+Source label 1 count,134850
+Rows with any missing URL feature before imputation,0
+Duplicate engineered feature rows,203176
+Unique feature vectors with both labels,154
+Unique groups of identical feature vectors,32619

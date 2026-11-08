@@ -1,0 +1,19 @@
+Feature,Missing values
+URLLength,0
+DomainLength,0
+IsDomainIP,0
+TLDLength,0
+NoOfSubDomain,0
+HasObfuscation,0
+NoOfObfuscatedChar,0
+ObfuscationRatio,0
+NoOfLettersInURL,0
+LetterRatioInURL,0
+NoOfDegitsInURL,0
+DegitRatioInURL,0
+NoOfEqualsInURL,0
+NoOfQMarkInURL,0
+NoOfAmpersandInURL,0
+NoOfOtherSpecialCharsInURL,0
+SpacialCharRatioInURL,0
+IsHTTPS,0

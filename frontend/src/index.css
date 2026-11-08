@@ -1,0 +1,309 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-canvas: #F5F5F7;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #1D1D1F;
+    --text-secondary: #515154;
+    --text-tertiary: #86868B;
+    --border-subtle: #E5E5EA;
+    --border-strong: #D2D2D7;
+    --accent-primary: #0071E3;
+    --accent-hover: #0077ED;
+  }
+
+  /* Standard Apple Theme (System A) */
+  [data-theme="standard"],
+  [data-theme="warm_neutral_light"] {
+    --bg-canvas: #F5F5F7;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #1D1D1F;
+    --text-secondary: #515154;
+    --text-tertiary: #86868B;
+    --border-subtle: #E5E5EA;
+    --border-strong: #D2D2D7;
+    --accent-primary: #0071E3;
+    --accent-hover: #0077ED;
+  }
+
+  [data-theme="standard"][data-mode="dark"],
+  [data-theme="warm_neutral_light"][data-mode="dark"] {
+    --bg-canvas: #000000;
+    --bg-surface: #1C1C1E;
+    --bg-card: #1C1C1E;
+    --text-primary: #F5F5F7;
+    --text-secondary: #8E8E93;
+    --text-tertiary: #636366;
+    --border-subtle: #2C2C2E;
+    --border-strong: #3A3A3C;
+    --accent-primary: #0A84FF;
+    --accent-hover: #409CFF;
+  }
+
+  /* 1. Royal Blue & Light Cream */
+  [data-theme="royal_blue_cream"] {
+    --bg-canvas: #FAF7F2;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --border-subtle: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --accent-primary: #1D4ED8;
+    --accent-hover: #2563EB;
+  }
+  [data-theme="royal_blue_cream"][data-mode="dark"] {
+    --bg-canvas: #0A1128;
+    --bg-surface: #101B3B;
+    --bg-card: #131E3A;
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-subtle: #1E293B;
+    --border-strong: #334155;
+    --accent-primary: #3B82F6;
+    --accent-hover: #60A5FA;
+  }
+
+  /* 2. Cyan Ash & Steel Black */
+  [data-theme="cyan_ash_steel"] {
+    --bg-canvas: #F1F5F9;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --border-subtle: #E2E8F0;
+    --border-strong: #CBD5E1;
+    --accent-primary: #0891B2;
+    --accent-hover: #06B6D4;
+  }
+  [data-theme="cyan_ash_steel"][data-mode="dark"] {
+    --bg-canvas: #0F172A;
+    --bg-surface: #1E293B;
+    --bg-card: #1E293B;
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-subtle: #334155;
+    --border-strong: #475569;
+    --accent-primary: #06B6D4;
+    --accent-hover: #22D3EE;
+  }
+
+  /* 3. Vista Blue & Blue Oxford */
+  [data-theme="vista_blue_oxford"] {
+    --bg-canvas: #F0F4F8;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #172554;
+    --text-secondary: #475569;
+    --border-subtle: #E0E7FF;
+    --border-strong: #C7D2FE;
+    --accent-primary: #1E3A8A;
+    --accent-hover: #2563EB;
+  }
+  [data-theme="vista_blue_oxford"][data-mode="dark"] {
+    --bg-canvas: #030712;
+    --bg-surface: #0F172A;
+    --bg-card: #0F172A;
+    --text-primary: #F3F4F6;
+    --text-secondary: #9CA3AF;
+    --border-subtle: #1F2937;
+    --border-strong: #374151;
+    --accent-primary: #60A5FA;
+    --accent-hover: #93C5FD;
+  }
+
+  /* 4. Forest & Leaf */
+  [data-theme="forest_leaf"] {
+    --bg-canvas: #F4F7F4;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #14532D;
+    --text-secondary: #365314;
+    --border-subtle: #DCFCE7;
+    --border-strong: #BBF7D0;
+    --accent-primary: #166534;
+    --accent-hover: #15803D;
+  }
+  [data-theme="forest_leaf"][data-mode="dark"] {
+    --bg-canvas: #0A1F0D;
+    --bg-surface: #142E18;
+    --bg-card: #142E18;
+    --text-primary: #F0FDF4;
+    --text-secondary: #86EFAC;
+    --border-subtle: #1F4A25;
+    --border-strong: #2D6A35;
+    --accent-primary: #22C55E;
+    --accent-hover: #4ADE80;
+  }
+
+  /* 5. Electric Mint & Carbon Black */
+  [data-theme="electric_mint_carbon"] {
+    --bg-canvas: #F0FDF4;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #134E4A;
+    --text-secondary: #2D3748;
+    --border-subtle: #CCFBF1;
+    --border-strong: #99F6E4;
+    --accent-primary: #0D9488;
+    --accent-hover: #14B8A6;
+  }
+  [data-theme="electric_mint_carbon"][data-mode="dark"] {
+    --bg-canvas: #040D0A;
+    --bg-surface: #0C1E18;
+    --bg-card: #0C1E18;
+    --text-primary: #E6FFFA;
+    --text-secondary: #99F6E4;
+    --border-subtle: #115E59;
+    --border-strong: #134E4A;
+    --accent-primary: #14B8A6;
+    --accent-hover: #2DD4BF;
+  }
+
+  /* 6. Wine Red & Light Sand */
+  [data-theme="wine_red_sand"] {
+    --bg-canvas: #FAF7F5;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #4C0519;
+    --text-secondary: #881337;
+    --border-subtle: #FFE4E6;
+    --border-strong: #FECDD3;
+    --accent-primary: #9F1239;
+    --accent-hover: #BE123C;
+  }
+  [data-theme="wine_red_sand"][data-mode="dark"] {
+    --bg-canvas: #1A050B;
+    --bg-surface: #2E0B16;
+    --bg-card: #2E0B16;
+    --text-primary: #FFF1F2;
+    --text-secondary: #FDA4AF;
+    --border-subtle: #4C0519;
+    --border-strong: #881337;
+    --accent-primary: #F43F5E;
+    --accent-hover: #FB7185;
+  }
+
+  /* 7. Cherry & Alabaster */
+  [data-theme="cherry_alabaster"] {
+    --bg-canvas: #FDF8F8;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #4C0519;
+    --text-secondary: #9F1239;
+    --border-subtle: #FFE4E6;
+    --border-strong: #FECDD3;
+    --accent-primary: #BE123C;
+    --accent-hover: #E11D48;
+  }
+  [data-theme="cherry_alabaster"][data-mode="dark"] {
+    --bg-canvas: #19060B;
+    --bg-surface: #2B0D15;
+    --bg-card: #2B0D15;
+    --text-primary: #FFE4E6;
+    --text-secondary: #FDA4AF;
+    --border-subtle: #4C0519;
+    --border-strong: #881337;
+    --accent-primary: #FB7185;
+    --accent-hover: #FDA4AF;
+  }
+
+  /* 8. Midnight Indigo & Vanilla */
+  [data-theme="midnight_indigo_vanilla"] {
+    --bg-canvas: #FAF7F0;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #1E1B4B;
+    --text-secondary: #3730A3;
+    --border-subtle: #E0E7FF;
+    --border-strong: #C7D2FE;
+    --accent-primary: #3730A3;
+    --accent-hover: #4338CA;
+  }
+  [data-theme="midnight_indigo_vanilla"][data-mode="dark"] {
+    --bg-canvas: #0B0C1E;
+    --bg-surface: #161936;
+    --bg-card: #161936;
+    --text-primary: #EEF2FF;
+    --text-secondary: #A5B4FC;
+    --border-subtle: #2E356A;
+    --border-strong: #3730A3;
+    --accent-primary: #818CF8;
+    --accent-hover: #A5B4FC;
+  }
+
+  /* 9. Warm Neutral Light (Apple Standard) */
+  [data-theme="warm_neutral_light"] {
+    --bg-canvas: #F5F5F7;
+    --bg-surface: #FFFFFF;
+    --bg-card: #FFFFFF;
+    --text-primary: #1D1D1F;
+    --text-secondary: #515154;
+    --border-subtle: #E5E5EA;
+    --border-strong: #D2D2D7;
+    --accent-primary: #0071E3;
+    --accent-hover: #0077ED;
+  }
+  [data-theme="warm_neutral_light"][data-mode="dark"] {
+    --bg-canvas: #121214;
+    --bg-surface: #1C1C1E;
+    --bg-card: #1C1C1E;
+    --text-primary: #F5F5F7;
+    --text-secondary: #86868B;
+    --border-subtle: #2C2C2E;
+    --border-strong: #38383A;
+    --accent-primary: #2997FF;
+    --accent-hover: #58A6FF;
+  }
+
+  /* 10. Carbon Slate Dark */
+  [data-theme="carbon_slate_dark"] {
+    --bg-canvas: #0F172A;
+    --bg-surface: #1E293B;
+    --bg-card: #1E293B;
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-subtle: #334155;
+    --border-strong: #475569;
+    --accent-primary: #38BDF8;
+    --accent-hover: #7DD3FC;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background-color: var(--bg-canvas);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}

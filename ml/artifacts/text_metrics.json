@@ -1,0 +1,19 @@
+{
+  "dataset": "EMSCAD",
+  "pipeline": "TF-IDF (1-2) + Logistic Regression (balanced)",
+  "train_n": 12516,
+  "test_n": 5364,
+  "split": "70:30",
+  "accuracy": 0.9767,
+  "precision": 0.7052,
+  "recall": 0.8923,
+  "f1_score": 0.7878,
+  "roc_auc": 0.9883,
+  "confusion_matrix": {
+    "true_negatives": 5007,
+    "false_positives": 97,
+    "false_negatives": 28,
+    "true_positives": 232
+  },
+  "fit_duration_seconds": 0.114
+}

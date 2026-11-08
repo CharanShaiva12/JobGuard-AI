@@ -1,0 +1,7 @@
+Check,Result
+Rows after valid binary-label filter,235795
+Original label 0 count,100945
+Original label 1 count,134850
+Duplicate URL-feature rows,203176
+Unique feature vectors associated with both labels,154
+Rows with any missing URL feature,0

@@ -1,0 +1,59 @@
+icons pure white background rainbow coloring drop shadow on everything, three feature cards in a row, emojis liquid glass em dashes using Inter Geist or Space Grotesk fonts. This colored stripe. Fake testimonials Bento grids terminal window. It's not X, it's Y. Checkmark bullets, three pricing tiers, no real product demos, soft corner radius purple and black, no skeleton loaders, radial orbs, dot grids, sparkle icons, animated arrows, no TOS, no privacy policy, hover animations for everything, neon colors and basic pastel colors.Remove horizontal scrolling
+Find broken links
+Add a mobile menu
+Add a favicon
+Fix page titles
+Add meta descriptions
+Fix footer links
+Add a custom 404 page
+Fix the copyright year
+Compress images
+Fix broken buttons
+Add success messages
+Add error messages
+Remove placeholder text
+Remove unused navigation
+Fix mobile overflow
+Make the logo clickable
+Make the phone number clickable
+Make the email clickable
+Make every page mobile optimized
+
+
+
+Act as a senior web designer and frontend engineer. Build a clean, polished website with the restraint and product focus I associate with Apple's marketing pages. Give my brand its own identity.
+
+
+Inspect an existing project before changing it. Preserve working features. Use the simplest implementation that supports the brief.
+
+DESIGN DIRECTION
+Use a near-white or warm neutral background, dark readable text, and one restrained accent. Create hierarchy through typography, spacing, and alignment. Establish reusable values for these choices.
+
+Make the actual product the main visual. Use concise headlines, readable paragraphs, and generous space around important content. Vary section composition according to what it explains.
+
+Avoid harsh gradients, rainbow colors, neon colors, generic pastels, and purple-and-black themes. Don't use pure white as the page background.
+
+No radial orbs, dot grids, liquid glass, decorative colored stripes, sparkle icons, emojis, or animated arrows. Don't put shadows on everything or use soft rounded corners throughout.
+
+Don't use Inter, Geist, Space Grotesk, or Lucide icons. Choose a readable alternative or a suitable system font stack. Use icons only when they clarify an action.
+
+CONTENT AND STRUCTURE
+Don't default to three feature cards, bento grids, decorative terminal windows, checkmark bullets, or three pricing tiers. Show actual pricing only if supplied.
+
+Don't invent testimonials, logos, statistics, customers, or claims. Use real screenshots or a working demonstration. Label simulated results clearly.
+
+Write specific copy. Avoid em dashes, en dashes, and the formula that rejects one description before declaring another. State the benefit directly.
+
+BEHAVIOR
+Keep motion restrained and purposeful. Don't animate every hover. Respect reduced-motion preferences and preserve normal scrolling.
+
+Make buttons, menus, and forms work. Include keyboard focus, labeled inputs, and useful error and empty states. Use skeleton loaders where real asynchronous content needs them, without artificial delays.
+
+Include Terms of Service and Privacy Policy links and pages based on the actual business and data practices. Mark missing details as drafts for review. Don't invent legal commitments.
+
+WORKFLOW
+Explain your visual direction briefly. Build one representative section with real content, inspect it at desktop and mobile widths, then extend the design.
+
+Use the selected resources below only where they solve a concrete need. Follow current documentation. Don't install every library.
+
+Check mobile wrapping, overflow, contrast, links, and the complete main action. Fix problems you observe. Report what you actually tested and what remains unfinished. Don't claim to have inspected a page you couldn't run.

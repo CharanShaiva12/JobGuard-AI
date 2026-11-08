@@ -1,0 +1,283 @@
+{
+  "info": {
+    "name": "JobGuard AI – REST API Test Suite (v2.1.0)",
+    "description": "Automated verification collection executing 14 API requests and 15 assertions across health, authentication, dual CAPTCHA, ML inference, and negative security boundaries.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. System Health Check",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/api/dashboard/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Service reports healthy', function () { var json = pm.response.json(); pm.expect(json.success).to.be.true; });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Generate Registration CAPTCHA",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/api/captcha/generate?action=register"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Returns challenge ID and SVG image', function () { var json = pm.response.json(); pm.expect(json.data.id).to.be.a('string'); pm.expect(json.data.svgImage).to.include('data:image/svg+xml'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Generate Login CAPTCHA",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/api/captcha/generate?action=login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Login CAPTCHA issued with TTL', function () { var json = pm.response.json(); pm.expect(json.data.expiresInSeconds).to.be.at.least(60); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Register Negative: Missing CAPTCHA",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"testuser\", \"email\": \"test@jobguard.local\", \"password\": \"Password123!\"}"
+        },
+        "url": "http://127.0.0.1:5000/api/auth/register"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Registration rejected without CAPTCHA (HTTP 400)', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Register Negative: Malformed Email",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\": \"testuser\", \"email\": \"invalid-email-format\", \"password\": \"Password123!\", \"captchaId\": \"fake\", \"captchaSolution\": \"0\"}"
+        },
+        "url": "http://127.0.0.1:5000/api/auth/register"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Malformed email rejected (HTTP 400)', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Login Negative: Bad Credentials",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"identifier\": \"nonexistent_user_999\", \"password\": \"WrongPass!\", \"captchaId\": \"fake\", \"captchaSolution\": \"0\"}"
+        },
+        "url": "http://127.0.0.1:5000/api/auth/login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Bad login rejected (HTTP 400 or 401)', function () { pm.expect([400, 401]).to.include(pm.response.code); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Analyze Job Opportunity (Multi-Engine)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jobTitle\": \"Data Entry Specialist\", \"companyName\": \"Global Hiring Ltd\", \"jobDescription\": \"Urgent hiring. Work from home. Pay 500 INR registration fee to receive offer letter immediately via Telegram @jobofferbot.\", \"applicationUrl\": \"http://192.168.1.1/apply\"}"
+        },
+        "url": "http://127.0.0.1:5000/api/scan/analyze-job"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Scan returns 200 and High Risk verdict', function () { var json = pm.response.json(); pm.response.to.have.status(200); pm.expect(json.data.overallRiskScore).to.be.at.least(65); pm.expect(json.data.riskLevel).to.eql('High Risk'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Analyze Job Negative: Missing Description",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"jobTitle\": \"Software Engineer\", \"jobDescription\": \"\"}"
+        },
+        "url": "http://127.0.0.1:5000/api/scan/analyze-job"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Empty description rejected with 400', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Analyze URL Endpoint",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"url\": \"http://192.168.1.1/apply/job?token=123\"}"
+        },
+        "url": "http://127.0.0.1:5000/api/scan/analyze-url"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('URL analysis identifies IP host as high risk', function () { var json = pm.response.json(); pm.response.to.have.status(200); pm.expect(json.data.probability).to.be.at.least(0.5); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Analyze URL Negative: Dangerous Scheme",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"url\": \"javascript:alert('xss')\"}"
+        },
+        "url": "http://127.0.0.1:5000/api/scan/analyze-url"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Dangerous pseudo-scheme rejected (HTTP 400)', function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Dashboard Real Statistics",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/api/dashboard/stats"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Dashboard stats returns numeric counts', function () { var json = pm.response.json(); pm.response.to.have.status(200); pm.expect(json.data.totalScans).to.be.a('number'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Protected Scan History: Missing Token",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/api/scan/history"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Protected endpoint returns 401 without token', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Scan Dossier By Invalid ID",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:5000/api/scan/history/non-existent-uuid"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Invalid scan ID returns 404', function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "14. FastAPI ML Microservice Health",
+      "request": {
+        "method": "GET",
+        "url": "http://127.0.0.1:8000/health"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('ML Microservice is healthy and models loaded', function () { var json = pm.response.json(); pm.response.to.have.status(200); pm.expect(json.status).to.eql('healthy'); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
