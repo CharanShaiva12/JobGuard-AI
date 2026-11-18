@@ -5,7 +5,7 @@
  *          and authentication gating with state preservation.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/common/Navbar';
@@ -13,23 +13,56 @@ import { Footer } from './components/common/Footer';
 import { Sidebar } from './components/common/Sidebar';
 import { CookieBanner } from './components/common/CookieBanner';
 import { ThemeModal } from './components/common/ThemeModal';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { AuthModal } from './components/auth/AuthModal';
 import { JobAnalyzerForm } from './components/analyzer/JobAnalyzerForm';
 import { AnalysisResultView } from './components/analyzer/AnalysisResultView';
-import { DashboardView } from './components/dashboard/DashboardView';
-import { ScanHistoryView } from './components/history/ScanHistoryView';
-import { AdminDashboardView } from './components/admin/AdminDashboardView';
-import { AdminLoginView } from './components/admin/AdminLoginView';
-import { ScamIntelligenceView } from './components/intelligence/ScamIntelligenceView';
-import { ModelPerformanceView } from './components/models/ModelPerformanceView';
-import { UserAnalyticsView } from './components/analytics/UserAnalyticsView';
-import { MyAccountView } from './components/account/MyAccountView';
-import { AboutView } from './components/about/AboutView';
-import { TermsOfService } from './components/legal/TermsOfService';
-import { PrivacyPolicy } from './components/legal/PrivacyPolicy';
-import { NotFoundView } from './components/common/NotFoundView';
 import { ScanDossier, User } from './types';
 import { api } from './services/api';
+
+// Route-level code splitting for secondary views (keeps initial landing bundle lean & UI identical)
+const DashboardView = lazy(() =>
+  import('./components/dashboard/DashboardView').then((m) => ({ default: m.DashboardView }))
+);
+const ScanHistoryView = lazy(() =>
+  import('./components/history/ScanHistoryView').then((m) => ({ default: m.ScanHistoryView }))
+);
+const AdminDashboardView = lazy(() =>
+  import('./components/admin/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView }))
+);
+const AdminLoginView = lazy(() =>
+  import('./components/admin/AdminLoginView').then((m) => ({ default: m.AdminLoginView }))
+);
+const ScamIntelligenceView = lazy(() =>
+  import('./components/intelligence/ScamIntelligenceView').then((m) => ({ default: m.ScamIntelligenceView }))
+);
+const ModelPerformanceView = lazy(() =>
+  import('./components/models/ModelPerformanceView').then((m) => ({ default: m.ModelPerformanceView }))
+);
+const UserAnalyticsView = lazy(() =>
+  import('./components/analytics/UserAnalyticsView').then((m) => ({ default: m.UserAnalyticsView }))
+);
+const MyAccountView = lazy(() =>
+  import('./components/account/MyAccountView').then((m) => ({ default: m.MyAccountView }))
+);
+const AboutView = lazy(() =>
+  import('./components/about/AboutView').then((m) => ({ default: m.AboutView }))
+);
+const TermsOfService = lazy(() =>
+  import('./components/legal/TermsOfService').then((m) => ({ default: m.TermsOfService }))
+);
+const PrivacyPolicy = lazy(() =>
+  import('./components/legal/PrivacyPolicy').then((m) => ({ default: m.PrivacyPolicy }))
+);
+const NotFoundView = lazy(() =>
+  import('./components/common/NotFoundView').then((m) => ({ default: m.NotFoundView }))
+);
+
+const RouteLoadingFallback: React.FC = () => (
+  <div className="flex items-center justify-center py-20 text-xs text-[var(--text-secondary)]">
+    Loading view...
+  </div>
+);
 
 const AppContent: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -144,7 +177,9 @@ const AppContent: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <Routes>
+        <ErrorBoundary>
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <Routes>
           <Route
             path="/"
             element={
@@ -229,7 +264,9 @@ const AppContent: React.FC = () => {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="*" element={<NotFoundView />} />
-        </Routes>
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </main>
 
       <Footer />

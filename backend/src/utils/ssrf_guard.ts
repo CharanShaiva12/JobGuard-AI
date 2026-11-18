@@ -36,7 +36,38 @@ const PRIVATE_IPV6_PATTERNS = [
   /^fd[0-9a-f]{2}:/i,               // Unique Local Address (ULA)
   /^fe80:/i,                        // Link-Local Unicast
   /^ff[0-9a-f]{2}:/i,               // Multicast
+  /^0*:0*:0*:0*:0*:0*:0*:0*1$/i,    // Expanded IPv6 loopback
+  /^0*:0*:0*:0*:0*:0*:0*:0*$/i,     // Expanded IPv6 unspecified
 ];
+
+/**
+ * Checks whether a single IPv4 or IPv6 address (including IPv4-mapped IPv6)
+ * falls inside any restricted private, loopback, link-local, or metadata range.
+ */
+export function isRestrictedIpAddress(ip: string, family?: number): boolean {
+  const normalized = ip.trim().toLowerCase().replace(/^\[|\]$/g, '');
+
+  // Detect IPv4-mapped IPv6 in dotted form: ::ffff:127.0.0.1
+  const v4MappedDotted = normalized.match(/^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
+  if (v4MappedDotted) {
+    return PRIVATE_IPV4_PATTERNS.some((p) => p.test(v4MappedDotted[1]));
+  }
+
+  // Detect IPv4-mapped IPv6 in hex form: ::ffff:7f00:0001
+  const v4MappedHex = normalized.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
+  if (v4MappedHex) {
+    const hi = parseInt(v4MappedHex[1], 16);
+    const lo = parseInt(v4MappedHex[2], 16);
+    const dotted = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
+    return PRIVATE_IPV4_PATTERNS.some((p) => p.test(dotted));
+  }
+
+  if (family === 4 || /^\d{1,3}(\.\d{1,3}){3}$/.test(normalized)) {
+    return PRIVATE_IPV4_PATTERNS.some((p) => p.test(normalized));
+  }
+
+  return PRIVATE_IPV6_PATTERNS.some((p) => p.test(normalized));
+}
 
 export interface SSRFValidationResult {
   isValid: boolean;
@@ -77,7 +108,8 @@ export async function validateUrlForSSRF(rawUrl: string): Promise<SSRFValidation
 
   const hostname = parsedUrl.hostname.toLowerCase();
 
-  // 2. Reject internal and loopback hostnames
+  // 2. Reject internal, loopback, and raw restricted IP literal hostnames
+  const unbracketedHost = hostname.replace(/^\[|\]$/g, '');
   if (
     hostname === 'localhost' ||
     hostname.endsWith('.localhost') ||
@@ -85,41 +117,31 @@ export async function validateUrlForSSRF(rawUrl: string): Promise<SSRFValidation
     hostname.endsWith('.internal') ||
     hostname.endsWith('.lan') ||
     hostname === '169.254.169.254' || // Cloud instance metadata IP
-    hostname === 'metadata.google.internal'
+    hostname === 'metadata.google.internal' ||
+    isRestrictedIpAddress(unbracketedHost)
   ) {
     return { isValid: false, error: 'Access to local, internal, or cloud metadata targets is forbidden.' };
   }
 
-  // 3. Resolve DNS to get physical target IP
+  // 3. Resolve ALL DNS A and AAAA records and validate EVERY resolved IP
   try {
-    const lookup = await lookupAsync(hostname);
-    const resolvedIp = lookup.address;
-
-    // Check IPv4 rules
-    if (lookup.family === 4) {
-      for (const pattern of PRIVATE_IPV4_PATTERNS) {
-        if (pattern.test(resolvedIp)) {
-          return {
-            isValid: false,
-            hostname,
-            ipAddress: resolvedIp,
-            error: `Resolved IP (${resolvedIp}) belongs to a restricted private or link-local address range.`,
-          };
-        }
-      }
+    const lookups = await lookupAsync(unbracketedHost, { all: true });
+    if (!Array.isArray(lookups) || lookups.length === 0) {
+      return {
+        isValid: false,
+        hostname,
+        error: `DNS resolution returned no records for hostname '${hostname}'.`,
+      };
     }
 
-    // Check IPv6 rules
-    if (lookup.family === 6) {
-      for (const pattern of PRIVATE_IPV6_PATTERNS) {
-        if (pattern.test(resolvedIp)) {
-          return {
-            isValid: false,
-            hostname,
-            ipAddress: resolvedIp,
-            error: `Resolved IPv6 (${resolvedIp}) belongs to a restricted internal or link-local address range.`,
-          };
-        }
+    for (const record of lookups) {
+      if (isRestrictedIpAddress(record.address, record.family)) {
+        return {
+          isValid: false,
+          hostname,
+          ipAddress: record.address,
+          error: `Resolved IP (${record.address}) belongs to a restricted private, loopback, or link-local address range.`,
+        };
       }
     }
 
@@ -127,7 +149,7 @@ export async function validateUrlForSSRF(rawUrl: string): Promise<SSRFValidation
       isValid: true,
       sanitizedUrl: parsedUrl.toString(),
       hostname,
-      ipAddress: resolvedIp,
+      ipAddress: lookups[0].address,
     };
   } catch (err: any) {
     return {

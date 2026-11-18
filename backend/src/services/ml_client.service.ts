@@ -8,11 +8,25 @@
 import axios from 'axios';
 import { config } from '../config/env.js';
 
+export interface TextTermContribution {
+  term: string;
+  contribution: number;
+  direction: string;
+}
+
 export interface TextMLResult {
   probability: number;
   prediction: number;
   riskLevel: string;
   tokenCount: number;
+  topContributingTerms?: TextTermContribution[];
+}
+
+export interface UrlFeatureContribution {
+  feature: string;
+  value: number;
+  contribution: number;
+  direction: string;
 }
 
 export interface UrlMLResult {
@@ -23,13 +37,17 @@ export interface UrlMLResult {
   features: Record<string, any>;
   indicators: string[];
   metadata: Record<string, any>;
+  topFeatureContributions?: UrlFeatureContribution[];
 }
 
 export class MLClientService {
   private static client = axios.create({
     baseURL: config.mlServiceUrl,
     timeout: 5000, // 5s timeout
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(config.mlInternalApiKey ? { 'X-ML-API-Key': config.mlInternalApiKey } : {}),
+    },
   });
 
   /**
@@ -67,6 +85,9 @@ export class MLClientService {
         prediction: response.data.prediction,
         riskLevel: response.data.risk_level,
         tokenCount: response.data.token_count,
+        topContributingTerms: Array.isArray(response.data.top_contributing_terms)
+          ? response.data.top_contributing_terms
+          : [],
       };
     } catch (error: any) {
       console.warn(`[MLClientService] Text model service call failed (${error.message}). Using calibrated heuristic fallback.`);
@@ -96,6 +117,9 @@ export class MLClientService {
         features: response.data.features,
         indicators: response.data.indicators,
         metadata: response.data.metadata,
+        topFeatureContributions: Array.isArray(response.data.top_feature_contributions)
+          ? response.data.top_feature_contributions
+          : [],
       };
     } catch (error: any) {
       console.warn(`[MLClientService] URL model service call failed (${error.message}). Using passive lexical fallback.`);

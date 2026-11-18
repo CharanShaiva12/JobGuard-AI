@@ -19,15 +19,19 @@ from sklearn.metrics import (
 from sklearn.model_selection import train_test_split
 
 from app.text_preprocessor import clean_text_field, TEXT_COLUMNS
+from text_pipeline_config import (
+    RANDOM_STATE,
+    TEST_RATIO,
+    DEFAULT_DECISION_THRESHOLD,
+    create_tfidf_vectorizer,
+    create_text_classifier,
+)
 
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_PATH = BASE_DIR.parent / "data" / "raw" / "fake_job_postings.csv"
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
 ARTIFACTS_DIR.mkdir(exist_ok=True)
-
-RANDOM_STATE = 42
-TEST_RATIO = 0.30
 
 
 def train():
@@ -60,27 +64,22 @@ def train():
 
     # Feature Extraction: Sublinear TF-IDF (12,000 max dimensions)
     # Fitted strictly on training set to prevent data leakage
-    vectorizer = TfidfVectorizer(
-        max_features=12000,
-        sublinear_tf=True,
-        ngram_range=(1, 2),
-        stop_words="english"
-    )
+    vectorizer = create_tfidf_vectorizer()
     start_vec = time.time()
     x_train = vectorizer.fit_transform(x_train_text)
     x_test = vectorizer.transform(x_test_text)
     print(f"TF-IDF fitted in {time.time() - start_vec:.2f}s. Vocabulary size: {len(vectorizer.vocabulary_)}")
 
     # Model: Logistic Regression with balanced class weights
-    model = LogisticRegression(class_weight="balanced", max_iter=1000, random_state=RANDOM_STATE)
+    model = create_text_classifier()
     start_fit = time.time()
     model.fit(x_train, y_train)
     fit_duration = time.time() - start_fit
     print(f"Logistic Regression fitted in {fit_duration:.2f}s.")
 
-    # Evaluate on held-out test split
-    y_pred = model.predict(x_test)
+    # Evaluate on held-out test split using precision-recall optimized threshold
     y_prob = model.predict_proba(x_test)[:, 1]
+    y_pred = (y_prob >= DEFAULT_DECISION_THRESHOLD).astype(int)
 
     acc = float(accuracy_score(y_test, y_pred))
     prec = float(precision_score(y_test, y_pred, zero_division=0))
@@ -92,6 +91,7 @@ def train():
     metrics = {
         "dataset": "EMSCAD",
         "pipeline": "TF-IDF (1-2) + Logistic Regression (balanced)",
+        "decision_threshold": DEFAULT_DECISION_THRESHOLD,
         "train_n": int(len(y_train)),
         "test_n": int(len(y_test)),
         "split": "70:30",

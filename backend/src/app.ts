@@ -11,6 +11,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { config } from './config/env.js';
+import { logger, requestLoggerMiddleware } from './utils/logger.js';
 
 import authRoutes from './routes/auth.routes.js';
 import captchaRoutes from './routes/captcha.routes.js';
@@ -23,6 +24,9 @@ import systemRoutes from './routes/system.routes.js';
 
 const app = express();
 
+// Structured Request Logging & Correlation ID (X-Request-Id)
+app.use(requestLoggerMiddleware);
+
 // Security Headers
 app.use(
   helmet({
@@ -33,13 +37,19 @@ app.use(
 // Cookie Parser for HTTP-only JWT sessions
 app.use(cookieParser());
 
-// CORS Configuration
+// Strict CORS Allowlist Configuration
+const allowedOrigins = new Set(config.corsOrigin);
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, etc.)
+      // Allow same-origin / server-to-server / CLI requests with no Origin header
       if (!origin) return callback(null, true);
-      return callback(null, true);
+      if (allowedOrigins.has(origin)) {
+        return callback(null, true);
+      }
+      const corsErr: any = new Error(`Origin '${origin}' is not allowed by CORS policy.`);
+      corsErr.status = 403;
+      return callback(corsErr, false);
     },
     credentials: true,
   })
@@ -81,11 +91,20 @@ app.use((req: Request, res: Response) => {
 
 // Global Centralized Error Handling Interceptor
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('[JobGuard API Error]:', err);
-  const status = err.status || 500;
+  logger.error(
+    {
+      requestId: (req as any).requestId,
+      method: req.method,
+      path: req.originalUrl || req.path,
+      err: { message: err?.message, name: err?.name, stack: config.nodeEnv === 'production' ? undefined : err?.stack },
+    },
+    'Unhandled API error'
+  );
+  const status = err.status || (err.name === 'MulterError' ? 400 : 500);
+  const isProd500 = config.nodeEnv === 'production' && status >= 500;
   res.status(status).json({
     success: false,
-    error: err.message || 'Internal server error occurred.',
+    error: isProd500 ? 'Internal server error occurred.' : (err.message || 'Internal server error occurred.'),
   });
 });
 

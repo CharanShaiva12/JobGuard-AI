@@ -6,10 +6,11 @@
 import { Router } from 'express';
 import { UserPreferencesController } from '../controllers/user_preferences.controller.js';
 import { optionalAuth, requireAuth } from '../middleware/auth.middleware.js';
+import { validateBody, updatePreferencesSchema } from '../middleware/validate.middleware.js';
 
 const router = Router();
 
 router.get('/', optionalAuth, UserPreferencesController.getPreferences);
-router.put('/', requireAuth, UserPreferencesController.updatePreferences);
+router.put('/', requireAuth, validateBody(updatePreferencesSchema), UserPreferencesController.updatePreferences);
 
 export default router;

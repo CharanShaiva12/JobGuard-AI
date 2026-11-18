@@ -19,9 +19,22 @@ import joblib
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import classification_report, f1_score, accuracy_score, precision_score, recall_score, roc_auc_score
+
+try:
+    from text_pipeline_config import (
+        RANDOM_STATE,
+        TEST_RATIO,
+        create_tfidf_vectorizer,
+        create_text_classifier,
+    )
+except ImportError:
+    from ml.text_pipeline_config import (
+        RANDOM_STATE,
+        TEST_RATIO,
+        create_tfidf_vectorizer,
+        create_text_classifier,
+    )
 
 BASE_DIR = Path(__file__).resolve().parent
 ARTIFACTS_DIR = BASE_DIR / "artifacts"
@@ -83,34 +96,33 @@ def retrain_candidate_model(verified_samples: list = None) -> dict:
         print(f"[ModelLifecycle] Integrated {len(verified_samples)} verified feedback samples.")
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42, stratify=y
+        X, y, test_size=TEST_RATIO, random_state=RANDOM_STATE, stratify=y
     )
 
-    # Train candidate TF-IDF vectorizer and Logistic Regression
-    vectorizer = TfidfVectorizer(
-        max_features=10000,
-        ngram_range=(1, 2),
-        sublinear_tf=True,
-        stop_words='english'
-    )
+    # Train candidate TF-IDF vectorizer and Logistic Regression using shared benchmark config
+    vectorizer = create_tfidf_vectorizer()
     X_train_vec = vectorizer.fit_transform(X_train)
     X_test_vec = vectorizer.transform(X_test)
 
-    candidate_model = LogisticRegression(class_weight='balanced', max_iter=1000, random_state=42)
+    candidate_model = create_text_classifier()
     candidate_model.fit(X_train_vec, y_train)
 
     y_pred = candidate_model.predict(X_test_vec)
+    y_prob = candidate_model.predict_proba(X_test_vec)[:, 1]
 
     acc = float(accuracy_score(y_test, y_pred))
     prec = float(precision_score(y_test, y_pred, zero_division=0))
     rec = float(recall_score(y_test, y_pred, zero_division=0))
     f1 = float(f1_score(y_test, y_pred, zero_division=0))
+    auc = float(roc_auc_score(y_test, y_prob))
 
     eval_results = {
         "accuracy": round(acc, 4),
         "precision": round(prec, 4),
         "recall": round(rec, 4),
         "f1_score": round(f1, 4),
+        "roc_auc": round(auc, 4),
+        "split": "70:30",
         "total_training_samples": len(X_train),
         "total_test_samples": len(X_test),
         "augmented_feedback_samples": len(verified_samples) if verified_samples else 0,

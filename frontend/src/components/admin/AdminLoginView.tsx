@@ -13,7 +13,7 @@ import { CaptchaBox } from '../common/CaptchaBox';
 
 interface AdminLoginViewProps {
   currentUser: User | null;
-  onAdminLoginSuccess: (adminUser: User, token: string) => void;
+  onAdminLoginSuccess: (adminUser: User, token?: string) => void;
 }
 
 export const AdminLoginView: React.FC<AdminLoginViewProps> = ({

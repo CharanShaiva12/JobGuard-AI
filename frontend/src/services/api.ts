@@ -69,7 +69,7 @@ export const api = {
     preferredLocation?: string;
     captchaId: string;
     captchaSolution: string;
-  }): Promise<{ user: User; token: string }> {
+  }): Promise<{ user: User; token?: string }> {
     const res = await apiClient.post('/auth/register', payload);
     return res.data.data;
   },
@@ -79,7 +79,7 @@ export const api = {
     password: string;
     captchaId: string;
     captchaSolution: string;
-  }): Promise<{ user: User; token: string; mustChangePassword?: boolean }> {
+  }): Promise<{ user: User; token?: string; mustChangePassword?: boolean }> {
     const res = await apiClient.post('/auth/login', payload);
     return res.data.data;
   },
@@ -89,7 +89,7 @@ export const api = {
     password: string;
     captchaId: string;
     captchaSolution: string;
-  }): Promise<{ user: User; token: string; mustChangePassword?: boolean }> {
+  }): Promise<{ user: User; token?: string; mustChangePassword?: boolean }> {
     const res = await apiClient.post('/auth/admin-login', payload);
     return res.data.data;
   },

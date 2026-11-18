@@ -10,9 +10,57 @@
  *         Never fabricates URLs, dates, or search results.
  */
 
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenAI, Type } from '@google/genai';
 import { config } from '../config/env.js';
 import { GeminiQueueService } from './gemini_queue.service.js';
+
+const VERIFICATION_STATUS_ENUM = [
+  'VERIFIED WITH SOURCE EVIDENCE',
+  'VERIFIED',
+  'NOT FOUND',
+  'MISMATCH',
+  'UNABLE TO VERIFY',
+  'DATE UNAVAILABLE',
+  'NO MATCHING PUBLIC RESULT',
+];
+
+const GEMINI_FORENSIC_RESPONSE_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    scam_probability: { type: Type.NUMBER },
+    brand_impersonation_detected: { type: Type.BOOLEAN },
+    assessment_summary: { type: Type.STRING },
+    positive_indicators: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+    },
+    potential_concerns: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+    },
+    company_verification_status: {
+      type: Type.STRING,
+      enum: VERIFICATION_STATUS_ENUM,
+    },
+    vacancy_verification_status: {
+      type: Type.STRING,
+      enum: VERIFICATION_STATUS_ENUM,
+    },
+    official_website: { type: Type.STRING },
+    careers_url: { type: Type.STRING },
+    actionable_advisory: { type: Type.STRING },
+  },
+  required: [
+    'scam_probability',
+    'brand_impersonation_detected',
+    'assessment_summary',
+    'positive_indicators',
+    'potential_concerns',
+    'company_verification_status',
+    'vacancy_verification_status',
+    'actionable_advisory',
+  ],
+};
 
 export type PublicVerificationStatus =
   | 'VERIFIED WITH SOURCE EVIDENCE'
@@ -266,6 +314,7 @@ Respond with a JSON object matching this schema:
           contents: `${systemInstructions}\n\n${userPrompt}`,
           config: {
             responseMimeType: 'application/json',
+            responseSchema: GEMINI_FORENSIC_RESPONSE_SCHEMA,
             temperature: 0.1,
           },
         });

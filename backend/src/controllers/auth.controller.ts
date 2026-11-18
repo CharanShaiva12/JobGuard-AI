@@ -65,10 +65,11 @@ export class AuthController {
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
       });
 
+      const { token: _omittedToken, ...safeResult } = result;
       res.status(201).json({
         success: true,
         message: 'Account registered successfully.',
-        data: result,
+        data: safeResult,
       });
     } catch (error: any) {
       res.status(400).json({ success: false, error: error.message });
@@ -104,10 +105,11 @@ export class AuthController {
         maxAge: 24 * 60 * 60 * 1000,
       });
 
+      const { token: _omittedToken, ...safeResult } = result;
       res.status(200).json({
         success: true,
         message: 'Authenticated successfully.',
-        data: result,
+        data: safeResult,
       });
     } catch (error: any) {
       res.status(401).json({ success: false, error: error.message });
@@ -151,10 +153,11 @@ export class AuthController {
         maxAge: 24 * 60 * 60 * 1000,
       });
 
+      const { token: _omittedToken, ...safeResult } = result;
       res.status(200).json({
         success: true,
         message: 'Administrator authenticated successfully.',
-        data: result,
+        data: safeResult,
       });
     } catch (error: any) {
       res.status(401).json({ success: false, error: error.message });
@@ -162,7 +165,11 @@ export class AuthController {
   }
 
   public static async logout(req: Request, res: Response): Promise<void> {
-    res.clearCookie('jobguard_session');
+    res.clearCookie('jobguard_session', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
     res.status(200).json({
       success: true,
       message: 'Logged out successfully.',

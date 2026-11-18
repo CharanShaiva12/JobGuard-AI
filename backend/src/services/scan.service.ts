@@ -16,6 +16,8 @@ import { MLClientService } from './ml_client.service.js';
 import { GeminiService } from './gemini.service.js';
 import { RiskFusionService } from './risk_fusion.service.js';
 import { ThreatIntelService } from './threat_intel.service.js';
+import { DomainIntelService } from './domain_intel.service.js';
+import { config } from '../config/env.js';
 import { validateUrlForSSRF } from '../utils/ssrf_guard.js';
 import { DirectSourceVerificationService, DirectSourceFinding } from './direct_source_verification.service.js';
 import { ScanDossier, VerificationStatus } from '../types/index.js';
@@ -192,6 +194,7 @@ export class ScanService {
     let officialDomain = '';
     let directFindingItem: any = null;
     const directPositiveIndicators: string[] = [];
+    const domainIntelConcerns: string[] = [];
 
     if (cleanUrl) {
       const ssrfCheck = await validateUrlForSSRF(cleanUrl);
@@ -228,10 +231,39 @@ export class ScanService {
             if (urlPrediction.indicators && urlPrediction.indicators.length > 0) {
               urlIndicators.push(...urlPrediction.indicators);
             }
+            if (U >= 0.40 && urlPrediction.topFeatureContributions && urlPrediction.topFeatureContributions.length > 0) {
+              const topDrivers = urlPrediction.topFeatureContributions
+                .filter((fc) => fc.direction === 'risk_increasing')
+                .slice(0, 3)
+                .map((fc) => `${fc.feature}=${fc.value}`)
+                .join(', ');
+              if (topDrivers) {
+                urlIndicators.push(`XGBoost Top Structural Risk Drivers: ${topDrivers}`);
+              }
+            }
           }
         } catch (err: any) {
           console.warn(`[ScanService] URL ML evaluation notice: ${err.message}`);
           U = null;
+        }
+
+        // Passive RDAP Domain Age & DNS Email Authentication (MX/SPF/DMARC)
+        if (officialDomain) {
+          try {
+            const domainAuth = await DomainIntelService.inspectDomain(
+              officialDomain,
+              config.jobguardMode === 'offline'
+            );
+            if (domainAuth.positiveSignals.length > 0) {
+              directPositiveIndicators.push(...domainAuth.positiveSignals);
+            }
+            if (domainAuth.riskSignals.length > 0) {
+              domainIntelConcerns.push(...domainAuth.riskSignals);
+              urlIndicators.push(...domainAuth.riskSignals);
+            }
+          } catch {
+            // Best-effort passive domain intel; never blocks scan execution
+          }
         }
 
         // Direct public source verification (Free Tier, SSRF protected)
@@ -298,6 +330,34 @@ export class ScanService {
           benefits: payload.benefits || '',
         });
         M = textPrediction.probability;
+
+        // Wire token-level ML explainability into existing SuspiciousTextHighlighter without altering UI
+        if (M >= 0.40 && textPrediction.topContributingTerms && textPrediction.topContributingTerms.length > 0) {
+          const lowerDesc = cleanDescription.toLowerCase();
+          const existingPhrases = new Set(ruleEvaluation.matchedRules.map((r) => r.phrase.toLowerCase()));
+          const mlRiskTerms = textPrediction.topContributingTerms
+            .filter(
+              (t) =>
+                t.direction === 'risk_increasing' &&
+                t.contribution >= 0.15 &&
+                t.term.length >= 4 &&
+                lowerDesc.includes(t.term.toLowerCase()) &&
+                !existingPhrases.has(t.term.toLowerCase())
+            )
+            .slice(0, 4);
+
+          for (const termItem of mlRiskTerms) {
+            existingPhrases.add(termItem.term.toLowerCase());
+            ruleEvaluation.matchedRules.push({
+              id: `ml_tfidf_${termItem.term.replace(/\s+/g, '_')}`,
+              category: 'ML Statistical Signal',
+              phrase: termItem.term,
+              severity: termItem.contribution >= 0.40 ? 'HIGH' : 'MEDIUM',
+              weight: Math.min(0.25, Math.round(termItem.contribution * 100) / 100),
+              explanation: `EMSCAD TF-IDF classifier identified "${termItem.term}" as a statistically significant fraud-associated phrase (log-odds impact: +${termItem.contribution.toFixed(2)}).`,
+            });
+          }
+        }
       } catch (err: any) {
         console.warn(`[ScanService] Text ML fallback notice: ${err.message}`);
         M = null;
@@ -399,7 +459,7 @@ export class ScanService {
 
     // Combine indicators
     const positiveIndicators: string[] = [...geminiAnalysis.positiveIndicators, ...directPositiveIndicators];
-    const potentialConcerns: string[] = [...geminiAnalysis.potentialConcerns];
+    const potentialConcerns: string[] = [...geminiAnalysis.potentialConcerns, ...domainIntelConcerns];
 
     if (isStandaloneCareersPortal && !positiveIndicators.some((i) => i.includes('official') || i.includes('domain'))) {
       positiveIndicators.unshift(`Application URL is hosted on the official ${displayCompany} domain (${officialDomain}). Website identity is verified.`);

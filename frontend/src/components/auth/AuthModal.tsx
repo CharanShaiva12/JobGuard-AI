@@ -7,7 +7,7 @@ interface AuthModalProps {
   isOpen: boolean;
   initialMode: 'login' | 'register';
   onClose: () => void;
-  onSuccess: (user: User, token: string) => void;
+  onSuccess: (user: User, token?: string) => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({
